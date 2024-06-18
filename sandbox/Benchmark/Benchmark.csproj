@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotnet" Version="0.13.12" />
+    <PackageReference Include="CsvHelper" Version="32.0.3" />
+    <PackageReference Include="Sep" Version="0.5.2" />
+    <PackageReference Include="ServiceStack.Text" Version="8.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Csv\Csv.csproj" />
+    <ProjectReference Include="..\..\src\Csv.Annotations\Csv.Annotations.csproj" />
+    <ProjectReference Include="..\..\src\Csv.SourceGenerator\Csv.SourceGenerator.csproj">
+			<OutputItemType>Analyzer</OutputItemType>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

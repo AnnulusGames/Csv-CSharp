@@ -1,0 +1,284 @@
+using System.Buffers;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
+using Csv.Internal;
+
+namespace Csv;
+
+[StructLayout(LayoutKind.Auto)]
+public ref partial struct CsvReader
+{
+    SequenceReader<byte> reader;
+    readonly CsvOptions options;
+    readonly byte separator;
+
+    public readonly CsvOptions Options => options;
+    public readonly long Consumed => reader.Consumed;
+    public readonly long Remaining => reader.Remaining;
+
+    public CsvReader(in ReadOnlySequence<byte> sequence, CsvOptions options)
+    {
+        reader = new(sequence);
+        this.options = options;
+        separator = options.Separator.ToUtf8();
+    }
+
+    public bool ReadBoolean()
+    {
+        if (IsNextSeparatorOrNewline()) return default;
+        SkipWhitespace();
+
+        TrySkipQuotation();
+
+        if (reader.TryRead(out var c1))
+        {
+            if (c1 == 't')
+            {
+                if (!reader.TryRead(out var c2) || c2 != 'r') goto ERROR_TRUE;
+                if (!reader.TryRead(out var c3) || c3 != 'u') goto ERROR_TRUE;
+                if (!reader.TryRead(out var c4) || c4 != 'e') goto ERROR_TRUE;
+                return true;
+            }
+            else if (c1 == 'f')
+            {
+                if (!reader.TryRead(out var c2) || c2 != 'a') goto ERROR_FALSE;
+                if (!reader.TryRead(out var c3) || c3 != 'l') goto ERROR_FALSE;
+                if (!reader.TryRead(out var c4) || c4 != 's') goto ERROR_FALSE;
+                if (!reader.TryRead(out var c5) || c5 != 'e') goto ERROR_FALSE;
+                return false;
+            }
+        }
+        else
+        {
+            CsvSerializationException.ThrowFailedEncoding();
+        }
+
+        TrySkipQuotation();
+
+    ERROR_TRUE:
+    ERROR_FALSE:
+        CsvSerializationException.ThrowFailedEncoding();
+
+        // dummy
+        return default;
+    }
+
+    public string? ReadString()
+    {
+        if (IsNextSeparatorOrNewline()) return null;
+
+        var startFromQuotation = TrySkipQuotation(false);
+
+        if (!startFromQuotation)
+        {
+#if NET5_0_OR_GREATER
+            scoped Span<byte> delimitersSpan = [(byte)'\r', (byte)'\n', separator];
+#else
+            byte[] delimiters = [(byte)'\r', (byte)'\n', separator];
+            Span<byte> delimitersSpan = delimiters.AsSpan(0, 3);
+#endif
+
+            var remaining = reader.Remaining;
+            if (reader.CurrentSpan.Length - reader.CurrentSpanIndex == remaining)
+            {
+                if (!reader.TryReadToAny(out ReadOnlySpan<byte> span, delimitersSpan, false))
+                {
+                    span = reader.UnreadSpan;
+#if NET5_0_OR_GREATER
+                    reader.AdvanceToEnd();
+#else
+                    reader.Advance(remaining);
+#endif
+                }
+
+                if (span.Length == 0) return null;
+                return Encoding.UTF8.GetString(span);
+            }
+            else
+            {
+                if (!reader.TryReadToAny(out ReadOnlySequence<byte> sequence, delimitersSpan, false))
+                {
+                    sequence = reader.Sequence.Slice(reader.Consumed);
+#if NET5_0_OR_GREATER
+                    reader.AdvanceToEnd();
+#else
+                    reader.Advance(remaining);
+#endif
+                }
+
+                var length = (int)sequence.Length;
+                if (length == 0) return null;
+#if NET5_0_OR_GREATER
+                return Encoding.UTF8.GetString(sequence);
+#else
+                var buffer = ArrayPool<byte>.Shared.Rent(length);
+                try
+                {
+                    var span = new Span<byte>(buffer, 0, length);
+                    sequence.CopyTo(span);
+                    return Encoding.UTF8.GetString(span);
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+#endif
+            }
+        }
+        else
+        {
+            using var buffer = new TempList<byte>(64);
+
+            while (reader.TryRead(out var current))
+            {
+                // escape '"'
+                if (current == '"')
+                {
+                    if (!reader.TryPeek(out var c2)) goto RETURN;
+                    if (c2 != '"') goto RETURN;
+
+                    buffer.Add(c2);
+                    reader.Advance(1);
+                    continue;
+                }
+
+                buffer.Add(current);
+            }
+
+        RETURN:
+            return Encoding.UTF8.GetString(buffer.AsSpan());
+        }
+    }
+
+    public void ReadUtf8(ref TempList<byte> buffer)
+    {
+        if (IsNextSeparatorOrNewline()) return;
+
+        var startFromQuotation = TrySkipQuotation(false);
+
+        while (reader.TryRead(out var c1))
+        {
+            // escape '"'
+            if (startFromQuotation)
+            {
+                if (c1 == '"')
+                {
+                    if (!reader.TryPeek(out var c2)) return;
+                    if (c2 != '"') return;
+
+                    buffer.Add(c2);
+                    reader.Advance(1);
+                    continue;
+                }
+            }
+            else if (c1 == (byte)'\n' || c1 == (byte)'\r' || c1 == separator)
+            {
+                return;
+            }
+
+            buffer.Add(c1);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryReadSeparator(bool skipWhiteSpace = true)
+    {
+        if (skipWhiteSpace) SkipWhitespace();
+
+        if (!reader.TryPeek(out var current)) return false;
+        if (current != separator) return false;
+
+        reader.Advance(1);
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ReadSeparator()
+    {
+        if (!TryReadSeparator()) CsvSerializationException.ThrowMessage("Parsing failed.");
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryReadEndOfLine(bool skipWhiteSpace = true)
+    {
+        if (skipWhiteSpace) SkipWhitespace();
+
+        if (!reader.TryPeek(out var c1) || c1 is not ((byte)'\n' or (byte)'\r')) return false;
+        reader.Advance(1);
+
+        if (c1 == '\r' && reader.TryPeek(out var c2) && c2 == '\n')
+        {
+            reader.Advance(1);
+        }
+
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ReadEndOfLine()
+    {
+        if (!TryReadEndOfLine()) CsvSerializationException.ThrowMessage("Parsing failed.");
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TrySkipComment(bool skipWhiteSpace = true)
+    {
+        if (skipWhiteSpace) SkipWhitespace();
+        var isComment = reader.IsNext((byte)'#', true);
+        if (isComment) AdvanceToEndOfLine();
+
+        return isComment;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AdvanceToEndOfLine()
+    {
+        if (!reader.TryAdvanceToAny([(byte)'\n', (byte)'\r'], false)) return;
+        reader.TryRead(out var c1);
+        if (c1 == '\r' && reader.TryPeek(out var c2) && c2 == '\n')
+        {
+            reader.Advance(1);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AdvanceToSeparatorOrEndOfLine()
+    {
+        SkipWhitespace();
+
+        while (true)
+        {
+            if (!reader.TryPeek(out var c)) return;
+            if (c == (byte)'\n' || c == (byte)'\r' || c == separator) break;
+        }
+
+        reader.TryRead(out var c1);
+        if (c1 == '\r' && reader.TryPeek(out var c2) && c2 == '\n')
+        {
+            reader.Advance(1);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SkipWhitespace()
+    {
+        reader.AdvancePast((byte)' ');
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    bool TrySkipQuotation(bool skipWhiteSpace = true)
+    {
+        if (skipWhiteSpace) SkipWhitespace();
+        return reader.IsNext((byte)'"', true);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsNextSeparatorOrNewline(bool skipWhiteSpace = true)
+    {
+        if (skipWhiteSpace) SkipWhitespace();
+
+        if (!reader.TryPeek(out var c)) return true;
+        return c == separator || (c is (byte)'\r' or (byte)'\n');
+    }
+}
