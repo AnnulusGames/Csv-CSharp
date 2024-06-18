@@ -1,12 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
-    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0;net7.0;net8.0;netstandard2.1</TargetFrameworks>
     <LangVersion>12</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <PackageId>CsvCSharp.Annotations</PackageId>
+    <Version>0.1.1</Version>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Attributes and interfaces for Csv-CSharp serialization.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath=""/>
+  </ItemGroup>
 
 </Project>
