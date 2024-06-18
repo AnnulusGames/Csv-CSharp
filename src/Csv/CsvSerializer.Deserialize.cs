@@ -47,7 +47,7 @@ public static partial class CsvSerializer
         return serializer.Deserialize(ref reader, destination);
     }
 
-    public static T[] DeserializeFromString<T>(string str, CsvOptions? options = default)
+    public static T[] Deserialize<T>(string str, CsvOptions? options = default)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetByteCount(str));
         try
@@ -60,7 +60,7 @@ public static partial class CsvSerializer
         }
     }
 
-    public static int DeserializeFromString<T>(string str, Span<T> destination, CsvOptions? options = default)
+    public static int Deserialize<T>(string str, Span<T> destination, CsvOptions? options = default)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetByteCount(str));
         try
