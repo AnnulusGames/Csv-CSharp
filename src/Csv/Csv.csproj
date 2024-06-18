@@ -1,15 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Csv.Annotations\Csv.Annotations.csproj" />
+    <ProjectReference Include="..\Csv.SourceGenerator\Csv.SourceGenerator.csproj" ReferenceOutputAssembly="false" />
+
+    <None Include="..\..\LICENSE" Pack="true" PackagePath=""/>
+    <None Include="..\..\README.md" Pack="true" PackagePath="README.md"/>
+    <None Include="..\Csv.SourceGenerator\bin\$(Configuration)\netstandard2.0\Csv.SourceGenerator.dll"
+          PackagePath="analyzers\dotnet\cs"
+          Pack="true"
+          Visible="false" />
   </ItemGroup>
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
-    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0;net7.0;net8.0;netstandard2.1</TargetFrameworks>
     <LangVersion>12</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <Version>0.1.1</Version>
+    <PackageId>CsvCSharp</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageTags>serializer</PackageTags>
+    <Description>Fast CSV Serializer for .NET and Unity.</Description>
   </PropertyGroup>
 
 </Project>

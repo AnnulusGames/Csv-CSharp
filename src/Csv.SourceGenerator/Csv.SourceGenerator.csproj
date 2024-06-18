@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -13,6 +12,10 @@
 		<DevelopmentDependency>true</DevelopmentDependency>
 		<IncludeSymbols>false</IncludeSymbols>
 		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <PackageId>CsvCSharp.SourceGenerator</PackageId>
+    <Version>0.1.1</Version>
+    <Description>A source Generator for Csv-CSharp serialization.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +23,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.3.0" />
     
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+
+    <EmbeddedResource Include="..\..\LICENSE" />
   </ItemGroup>
 
 </Project>
