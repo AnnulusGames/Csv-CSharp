@@ -72,7 +72,7 @@ public ref partial struct CsvReader
 
         if (!startFromQuotation)
         {
-#if NET5_0_OR_GREATER
+#if NET7_0_OR_GREATER
             scoped Span<byte> delimitersSpan = [(byte)'\r', (byte)'\n', separator];
 #else
             byte[] delimiters = [(byte)'\r', (byte)'\n', separator];
