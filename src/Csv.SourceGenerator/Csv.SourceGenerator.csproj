@@ -13,6 +13,8 @@
 		<DevelopmentDependency>true</DevelopmentDependency>
 		<IncludeSymbols>false</IncludeSymbols>
 		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <Description>A source Generator for Csv-CSharp serialization.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@
     <LangVersion>12</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Description>Attributes and interfaces for Csv-CSharp serialization.</Description>
   </PropertyGroup>
 
 </Project>

@@ -1,15 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Csv.Annotations\Csv.Annotations.csproj" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="README.md"/>
   </ItemGroup>
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
     <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
     <LangVersion>12</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <Version>0.1.0</Version>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>serializer</PackageTags>
+    <Description>Fast CSV Serializer for .NET and Unity.</Description>
   </PropertyGroup>
 
 </Project>
