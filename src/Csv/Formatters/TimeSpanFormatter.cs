@@ -11,6 +11,6 @@ public sealed class TimeSpanFormatter(string? format = null, IFormatProvider? fo
 
     public void Serialize(ref CsvWriter writer, TimeSpan value)
     {
-        writer.WriteUtf16(value.ToString(format, formatProvider));
+        writer.WriteString(value.ToString(format, formatProvider));
     }
 }

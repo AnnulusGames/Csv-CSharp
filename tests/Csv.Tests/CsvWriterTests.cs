@@ -56,17 +56,17 @@ public class CsvWriterTests
         {
             QuoteMode = QuoteMode.All
         });
-        csvWriter.WriteUtf16("c1");
+        csvWriter.WriteString("c1");
         csvWriter.WriteSeparator();
-        csvWriter.WriteUtf16("c2");
+        csvWriter.WriteString("c2");
         csvWriter.WriteSeparator();
-        csvWriter.WriteUtf16("c3");
+        csvWriter.WriteString("c3");
         csvWriter.WriteEndOfLine();
-        csvWriter.WriteUtf16("foo");
+        csvWriter.WriteString("foo");
         csvWriter.WriteSeparator();
-        csvWriter.WriteUtf16("bar");
+        csvWriter.WriteString("bar");
         csvWriter.WriteSeparator();
-        csvWriter.WriteUtf16("baz");
+        csvWriter.WriteString("baz");
 
         Assert.That(Encoding.UTF8.GetString(bufferWriter.WrittenSpan), Is.EqualTo(
 @"""c1"",""c2"",""c3""
@@ -80,7 +80,7 @@ public class CsvWriterTests
     {
         var bufferWriter = new ArrayBufferWriter<byte>();
         var csvWriter = new CsvWriter(bufferWriter, new());
-        csvWriter.WriteUtf16("f\"oo");
+        csvWriter.WriteString("f\"oo");
         Assert.That(Encoding.UTF8.GetString(bufferWriter.WrittenSpan), Is.EqualTo(@"""f""""oo"""));
     }
 }

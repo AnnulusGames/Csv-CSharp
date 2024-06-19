@@ -13,6 +13,6 @@ public sealed class DateTimeFormatter(string? format = null, IFormatProvider? fo
 
     public void Serialize(ref CsvWriter writer, DateTime value)
     {
-        writer.WriteUtf16(value.ToString(format, formatProvider));
+        writer.WriteString(value.ToString(format, formatProvider));
     }
 }

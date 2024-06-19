@@ -107,10 +107,10 @@ public ref partial struct CsvWriter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteChar(char value)
     {
-        WriteUtf16([value]);
+        WriteString([value]);
     }
     
-    public void WriteUtf16(scoped ReadOnlySpan<char> value)
+    public void WriteString(scoped ReadOnlySpan<char> value)
     {
         // TODO: optimize
 

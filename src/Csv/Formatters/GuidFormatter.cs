@@ -11,6 +11,6 @@ public sealed class GuidFormatter : ICsvFormatter<Guid>
 
     public void Serialize(ref CsvWriter writer, Guid value)
     {
-        writer.WriteUtf16(value.ToString());
+        writer.WriteString(value.ToString());
     }
 }

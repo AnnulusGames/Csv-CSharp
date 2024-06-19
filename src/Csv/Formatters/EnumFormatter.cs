@@ -71,7 +71,7 @@ public sealed class EnumFormatter<T> : ICsvFormatter<T>
             valueString = GetSerializedNames(value.ToString());
         }
 
-        writer.WriteUtf16(valueString);
+        writer.WriteString(valueString);
     }
 
     string GetClrNames(string serializedNames)
