@@ -22,13 +22,13 @@ foreach (var item in deserialized)
 public partial record Person
 {
     [Column(0)]
-    public string? Name { get; set; }
+    public string? Name { get; init; }
 
     [Column(1)]
-    public int Age { get; set; }
+    public int Age { get; init; }
     
     [Column(2)]
-    public Gender Gender { get; set; }
+    public Gender Gender { get; init; }
 }
 
 public enum Gender

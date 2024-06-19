@@ -389,7 +389,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine("if (reader.TryReadEndOfLine()) continue;");
 				builder.AppendLine("if (allowComments && reader.TrySkipComment()) continue;");
 
-				builder.AppendLine($"{type.FullTypeName} item = new();");
+				EmitDeserializeLocalVariables(type, builder);
 
 				for (int i = 0; i < members.Count; i++)
 				{
@@ -399,7 +399,15 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 					{
 						builder.AppendLine();
 						builder.AppendLine("ADD_ITEM:");
-						builder.AppendLine("list.Add(item);");
+						builder.Append("list.Add(");
+						using (builder.BeginBlockScope("new()"))
+						{
+							foreach (var member in type.Members)
+							{
+								builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name},");
+							}
+						}
+						builder.AppendLine(");");
 					}
 					else
 					{
@@ -424,7 +432,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine("if (reader.TryReadEndOfLine()) continue;");
 				builder.AppendLine("if (allowComments && reader.TrySkipComment(false)) continue;");
 
-				builder.AppendLine($"{type.FullTypeName} item = new();");
+				EmitDeserializeLocalVariables(type, builder);
 
 				for (int i = 0; i < members.Count; i++)
 				{
@@ -434,7 +442,14 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 					{
 						builder.AppendLine();
 						builder.AppendLine("ADD_ITEM:");
-						builder.AppendLine("destination[n++] = item;");
+						using (builder.BeginBlockScope("destination[n++] = new()"))
+						{
+							foreach (var member in type.Members)
+							{
+								builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name},");
+							}
+						}
+						builder.AppendLine(";");
 					}
 					else
 					{
@@ -494,7 +509,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine("if (reader.TryReadEndOfLine()) continue;");
 				builder.AppendLine("if (allowComments && reader.TrySkipComment(false)) continue;");
 
-				builder.AppendLine($"{type.FullTypeName} item = new();");
+				EmitDeserializeLocalVariables(type, builder);
 
 				using (builder.BeginBlockScope("foreach (var index in map)"))
 				{
@@ -521,7 +536,15 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 
 				builder.AppendLine();
 				builder.AppendLine("ADD_ITEM:");
-				builder.AppendLine("list.Add(item);");
+				builder.Append("list.Add(");
+				using (builder.BeginBlockScope("new()"))
+				{
+					foreach (var member in type.Members)
+					{
+						builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name},");
+					}
+				}
+				builder.AppendLine(");");
 			}
 
 			builder.AppendLine("return list.AsSpan().ToArray();");
@@ -539,7 +562,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine("if (reader.TryReadEndOfLine()) continue;");
 				builder.AppendLine("if (allowComments && reader.TrySkipComment(false)) continue;");
 
-				builder.AppendLine($"{type.FullTypeName} item = new();");
+				EmitDeserializeLocalVariables(type, builder);
 
 				using (builder.BeginBlockScope("foreach (var index in map)"))
 				{
@@ -566,7 +589,14 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 
 				builder.AppendLine();
 				builder.AppendLine("ADD_ITEM:");
-				builder.AppendLine("destination[n++] = item;");
+				using (builder.BeginBlockScope("destination[n++] = new()"))
+				{
+					foreach (var member in type.Members)
+					{
+						builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name}");
+					}
+				}
+				builder.AppendLine(";");
 			}
 
 			builder.AppendLine("return n;");
@@ -595,64 +625,72 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 		builder.AppendLine("return -1;");
 	}
 
+	static void EmitDeserializeLocalVariables(TypeMetadata type, CodeBuilder builder)
+	{
+		foreach (var member in type.Members)
+		{
+			builder.AppendLine($"var __{member.Symbol.Name} = default({member.FullTypeName});");
+		}
+	}
+
 	static void EmitReadMember(MemberMetadata member, CodeBuilder builder)
 	{
 		switch (member.FullTypeName)
 		{
 			case "System.Boolean":
 			case "bool":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadBoolean();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadBoolean();");
 				break;
 			case "System.SByte":
 			case "sbyte":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadSByte();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadSByte();");
 				break;
 			case "System.Byte":
 			case "byte":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadByte();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadByte();");
 				break;
 			case "System.Int16":
 			case "short":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadInt16();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadInt16();");
 				break;
 			case "System.Int32":
 			case "int":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadInt32();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadInt32();");
 				break;
 			case "System.Int64":
 			case "long":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadInt64();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadInt64();");
 				break;
 			case "System.UInt16":
 			case "ushort":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadUInt16();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadUInt16();");
 				break;
 			case "System.UInt32":
 			case "uint":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadUInt32();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadUInt32();");
 				break;
 			case "System.UInt64":
 			case "ulong":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadUInt64();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadUInt64();");
 				break;
 			case "System.Single":
 			case "float":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadSingle();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadSingle();");
 				break;
 			case "System.Double":
 			case "double":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadDouble();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadDouble();");
 				break;
 			case "System.Decimal":
 			case "decimal":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadDecimal();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadDecimal();");
 				break;
 			case "System.String":
 			case "string":
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.ReadString();");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadString();");
 				break;
 			default:
-				builder.AppendLine($"item.{member.Symbol.Name} = reader.Options.FormatterProvider.GetFormatter<{member.FullTypeName}>().Deserialize(ref reader);");
+				builder.AppendLine($"__{member.Symbol.Name} = reader.Options.FormatterProvider.GetFormatter<{member.FullTypeName}>().Deserialize(ref reader);");
 				break;
 		}
 	}
