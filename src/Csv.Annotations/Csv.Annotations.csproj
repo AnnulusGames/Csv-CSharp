@@ -9,7 +9,10 @@
     <PackageId>CsvCSharp.Annotations</PackageId>
     <Version>0.1.2</Version>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageTags>CSV;Parser;Serializer;Unity;</PackageTags>
     <Description>Attributes and interfaces for Csv-CSharp serialization.</Description>
+    <RepositoryUrl>https://github.com/AnnulusGames/Csv-CSharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>

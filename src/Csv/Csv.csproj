@@ -22,8 +22,10 @@
     <PackageId>CsvCSharp</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageTags>serializer</PackageTags>
+    <PackageTags>CSV;Parser;Serializer;Unity;</PackageTags>
     <Description>Fast CSV Serializer for .NET and Unity.</Description>
+    <RepositoryUrl>https://github.com/AnnulusGames/Csv-CSharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
 </Project>
