@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>CsvCSharp.Annotations</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Attributes and interfaces for Csv-CSharp serialization.</Description>
   </PropertyGroup>
