@@ -359,7 +359,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				break;
 			case "System.String":
 			case "string":
-				builder.AppendLine($"writer.WriteUtf16(item.{member.Symbol.Name});");
+				builder.AppendLine($"writer.WriteString(item.{member.Symbol.Name});");
 				break;
 			default:
 				builder.AppendLine($"writer.Options.FormatterProvider.GetFormatter<{member.FullTypeName}>().Serialize(ref writer, item.{member.Symbol.Name});");
