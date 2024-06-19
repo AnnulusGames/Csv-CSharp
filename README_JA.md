@@ -135,6 +135,13 @@ CsvSerializer.Serialize(array, new CsvOptions()
 });
 ```
 
+## CSVの仕様
+
+Csv-CSharpのデフォルトの設定は概ね[RFC 4180](https://www.rfc-editor.org/rfc/rfc4180.html)で規定された仕様に従いますが、パフォーマンスや実用性の観点から一部の仕様を無視することに注意してください。
+
+- 改行コードのデフォルトはCRLFではなくLFです。
+- フィールド数が不一致のレコードも読み取りが可能です。(エラーは出力されず、初期値のままになります。)
+
 ## 機能拡張
 
 フィールドのSerialize/Deserialzeをカスタマイズするためのインターフェースとして`ICsvFormatter<T>`、 `ICsvFormatterProvider`が提供されています。

@@ -135,6 +135,13 @@ CsvSerializer.Serialize(array, new CsvOptions()
 });
 ```
 
+## CSV Specifications
+
+The default settings of Csv-CSharp generally follow the specifications outlined in [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180.html). However, please note that for performance and practicality reasons, some specifications may be disregarded.
+
+- The default newline character is LF instead of CRLF.
+- Records with a mismatch in the number of fields can be read without errors being output; missing fields will be set to their default values.
+
 ## Extensions
 
 Interfaces `ICsvFormatter<T>` and `ICsvFormatterProvider` are provided to customize field serialization/deserialization.
