@@ -5,12 +5,12 @@ namespace Csv;
 
 public record CsvOptions
 {
-    public bool HasHeader { get; set; } = true;
-    public bool AllowComments { get; set; } = true;
-    public NewLineType NewLine { get; set; } = NewLineType.LF;
-    public SeparatorType Separator { get; set; } = SeparatorType.Comma;
-    public QuoteMode QuoteMode { get; set; } = QuoteMode.Minimal;
-    public ICsvFormatterProvider FormatterProvider { get; set; } = StandardFormatterProvider.Instance;
+    public bool HasHeader { get; init; } = true;
+    public bool AllowComments { get; init; } = true;
+    public NewLineType NewLine { get; init; } = NewLineType.LF;
+    public SeparatorType Separator { get; init; } = SeparatorType.Comma;
+    public QuoteMode QuoteMode { get; init; } = QuoteMode.Minimal;
+    public ICsvFormatterProvider FormatterProvider { get; init; } = StandardFormatterProvider.Instance;
 }
 
 public enum NewLineType : byte
