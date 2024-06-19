@@ -361,6 +361,10 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 			case "string":
 				builder.AppendLine($"writer.WriteString(item.{member.Symbol.Name});");
 				break;
+			case "System.Char":
+			case "char":
+				builder.AppendLine($"writer.WriteChar(item.{member.Symbol.Name});");
+				break;
 			default:
 				builder.AppendLine($"writer.Options.FormatterProvider.GetFormatter<{member.FullTypeName}>().Serialize(ref writer, item.{member.Symbol.Name});");
 				break;
@@ -688,6 +692,10 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 			case "System.String":
 			case "string":
 				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadString();");
+				break;
+			case "System.Char":
+			case "char":
+				builder.AppendLine($"__{member.Symbol.Name} = reader.ReadChar();");
 				break;
 			default:
 				builder.AppendLine($"__{member.Symbol.Name} = reader.Options.FormatterProvider.GetFormatter<{member.FullTypeName}>().Deserialize(ref reader);");
