@@ -3,6 +3,8 @@
 [![NuGet](https://img.shields.io/nuget/v/CsvCSharp.svg)](https://www.nuget.org/packages/CsvCSharp)
 [![Releases](https://img.shields.io/github/release/AnnulusGames/Csv-CSharp.svg)](https://github.com/AnnulusGames/Csv-CSharp/releases)
 
+![img](docs/img1.png)
+
 Csv-CSharp is a highly performant CSV (TSV) parser for .NET and Unity. It is designed to parse UTF-8 binaries directly and leverage Source Generators to enable serialization/deserialization between CSV (TSV) and object arrays with zero (or very low) allocation.
 
 ## Installation

@@ -3,6 +3,8 @@
 [![NuGet](https://img.shields.io/nuget/v/CsvCSharp.svg)](https://www.nuget.org/packages/CsvCSharp)
 [![Releases](https://img.shields.io/github/release/AnnulusGames/Csv-CSharp.svg)](https://github.com/AnnulusGames/Csv-CSharp/releases)
 
+![img](docs/img1.png)
+
 Csv-CSharpは.NET、Unity向けの非常に高速なcsv(tsv)パーサです。UTF-8バイナリを直接解析する設計とSource Generatorの活用により、ゼロ(または非常に少ない)アロケーションでcsv(tsv)とオブジェクト配列間のシリアライズ/デシリアライズを可能にします。
 
 ## インストール
