@@ -489,8 +489,8 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 					builder.AppendLine("reader.ReadUtf8(ref keyBuffer);");
 					builder.AppendLine("map[i] = GetColumnIndex(keyBuffer.AsSpan());");
 					builder.AppendLine("keyBuffer.Clear(false);");
-					builder.AppendLine("if (reader.TryReadEndOfLine()) goto PARSE;");
-					builder.AppendLine("reader.TryReadSeparator(false);");
+					builder.AppendLine("if (reader.TryReadEndOfLine(true)) break;");
+					builder.AppendLine($"if (i != {members.Count} - 1) reader.TryReadSeparator(false);");
 				}
 			}
 			using (builder.BeginBlockScope("finally"))
@@ -499,7 +499,6 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 			}
 
 			builder.AppendLine();
-			builder.AppendLine("PARSE:");
 		}
 
 		using (builder.BeginBlockScope($"public {type.FullTypeName}[] Deserialize(ref global::Csv.CsvReader reader)"))
