@@ -64,6 +64,15 @@ public ref partial struct CsvReader
         return default;
     }
 
+    public char ReadChar()
+    {
+        // TODO: optimize
+
+        var str = ReadString();
+        if (str == null || str.Length != 1) CsvSerializationException.ThrowFailedEncoding();
+        return str[0];
+    }
+
     public string? ReadString()
     {
         if (IsNextSeparatorOrNewline()) return null;
@@ -151,9 +160,49 @@ public ref partial struct CsvReader
         }
     }
 
-    public void ReadUtf8(ref TempList<byte> buffer)
+    internal int SkipField()
     {
-        if (IsNextSeparatorOrNewline()) return;
+        if (IsNextSeparatorOrNewline())
+        {
+            return 0;
+        }
+
+        var consumed = reader.Consumed;
+        var startFromQuotation = TrySkipQuotation(false);
+
+        while (reader.TryRead(out var c1))
+        {
+            // escape '"'
+            if (startFromQuotation)
+            {
+                if (c1 == '"')
+                {
+                    if (!reader.TryPeek(out var c2)) goto RETURN;
+                    if (c2 != '"') goto RETURN;
+
+                    reader.Advance(1);
+                    continue;
+                }
+            }
+            else if (c1 == (byte)'\n' || c1 == (byte)'\r' || c1 == separator)
+            {
+                reader.Rewind(1);
+                goto RETURN;
+            }
+        }
+
+    RETURN:
+        return (int)(reader.Consumed - consumed);
+    }
+
+    public int ReadUtf8(ref TempList<byte> buffer)
+    {
+        if (IsNextSeparatorOrNewline())
+        {
+            return 0;
+        }
+
+        var consumed = reader.Consumed;
 
         var startFromQuotation = TrySkipQuotation(false);
 
@@ -164,8 +213,8 @@ public ref partial struct CsvReader
             {
                 if (c1 == '"')
                 {
-                    if (!reader.TryPeek(out var c2)) return;
-                    if (c2 != '"') return;
+                    if (!reader.TryPeek(out var c2)) goto RETURN;
+                    if (c2 != '"') goto RETURN;
 
                     buffer.Add(c2);
                     reader.Advance(1);
@@ -174,11 +223,15 @@ public ref partial struct CsvReader
             }
             else if (c1 == (byte)'\n' || c1 == (byte)'\r' || c1 == separator)
             {
-                return;
+                reader.Rewind(1);
+                goto RETURN;
             }
 
             buffer.Add(c1);
         }
+
+    RETURN:
+        return (int)(reader.Consumed - consumed);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

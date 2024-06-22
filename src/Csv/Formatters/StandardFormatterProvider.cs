@@ -6,6 +6,18 @@ public sealed class StandardFormatterProvider : ICsvFormatterProvider
 
     StandardFormatterProvider()
     {
+        Cache<sbyte>.value = SByteFormatter.Instance;
+        Cache<byte>.value = ByteFormatter.Instance;
+        Cache<short>.value = Int16Formatter.Instance;
+        Cache<ushort>.value = UInt16Formatter.Instance;
+        Cache<int>.value = Int32Formatter.Instance;
+        Cache<uint>.value = UInt32Formatter.Instance;
+        Cache<long>.value = Int64Formatter.Instance;
+        Cache<ulong>.value = UInt64Formatter.Instance;
+        Cache<string?>.value = StringFormatter.Instance;
+        Cache<DateTime>.value = new DateTimeFormatter();
+        Cache<TimeSpan>.value = new TimeSpanFormatter();
+        Cache<Guid>.value = new GuidFormatter();
     }
 
     static class Cache<T>
@@ -20,24 +32,6 @@ public sealed class StandardFormatterProvider : ICsvFormatterProvider
         if (typeof(T).IsEnum)
         {
             Cache<T>.value = (ICsvFormatter<T>)Activator.CreateInstance(typeof(EnumFormatter<>).MakeGenericType(typeof(T)))!;
-            goto RETURN;
-        }
-
-        if (typeof(T) == typeof(DateTime))
-        {
-            Cache<T>.value = new DateTimeFormatter() as ICsvFormatter<T>;
-            goto RETURN;
-        }
-
-        if (typeof(T) == typeof(TimeSpan))
-        {
-            Cache<T>.value = new TimeSpanFormatter() as ICsvFormatter<T>;
-            goto RETURN;
-        }
-
-        if (typeof(T) == typeof(Guid))
-        {
-            Cache<T>.value = new GuidFormatter() as ICsvFormatter<T>;
             goto RETURN;
         }
 
