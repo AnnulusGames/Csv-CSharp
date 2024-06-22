@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Csv.Internal;
 
-public ref struct TempList<T>
+public struct TempList<T> : IDisposable
 {
     T[] buffer;
     int count;

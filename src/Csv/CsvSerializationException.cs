@@ -32,6 +32,12 @@ public class CsvSerializationException : Exception
     }
 
     [DoesNotReturn]
+    public static void ThrowFormatterNotRegistered(Type type)
+    {
+        throw new CsvSerializationException($"No formatter is registered for type:{type.FullName}.");
+    }
+
+    [DoesNotReturn]
     public static void ThrowSequenceReachedEnd()
     {
         throw new CsvSerializationException($"Sequence reached end, reader can not provide more buffer.");
