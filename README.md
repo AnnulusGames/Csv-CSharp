@@ -119,6 +119,30 @@ public partial class Person
 > [!NOTE]
 > Currently, deserialization with a specified constructor is not implemented. Types marked with `[CsvObject]` require a parameterless constructor. This feature is expected to be implemented by version 1.0.
 
+## CsvDocument
+
+If you need to directly parse CSV fields, you can use `CsvDocument`.
+
+```cs
+var array = new Person[]
+{
+    new() { Name = "Alice", Age = 18 },
+    new() { Name = "Bob", Age = 23 },
+    new() { Name = "Carol", Age = 31 },
+};
+
+byte[] csv = CsvSerializer.Serialize(array);
+
+// CSV (UTF-8) -> CsvDocument
+var document = CsvSerializer.ConvertToDocument(csv);
+
+foreach (var row in document.Rows)
+{
+    var name = row["Name"].GetValue<string>();
+    var age = row["Age"].GetValue<int>();
+}
+```
+
 ## Options
 
 You can change CSV settings by passing `CsvOptions` to Serialize/Deserialize.

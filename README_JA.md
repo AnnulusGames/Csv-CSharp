@@ -119,6 +119,30 @@ public partial class Person
 > [!NOTE]
 > 現在コンストラクタを指定するDeserializeは未実装であり、`[CsvObject]`をマークした型にはパラメータなしのコンストラクタが必要です。この機能はv1.0までに実装される予定です。
 
+## CsvDocument
+
+CSVのフィールドを直接解析したい場合には`CsvDocument`を使用することができます。
+
+```cs
+var array = new Person[]
+{
+    new() { Name = "Alice", Age = 18 },
+    new() { Name = "Bob", Age = 23 },
+    new() { Name = "Carol", Age = 31 },
+}
+
+byte[] csv = CsvSerializer.Serialize(array);
+
+// CSV (UTF-8) -> CsvDocument
+var document = CsvSerializer.ConvertToDocument(csv);
+
+foreach (var row in document.Rows)
+{
+    var name = row["Name"].GetValue<string>();
+    var age = row["Age"].GetValue<int>();
+}
+```
+
 ## オプション
 
 Serialize/Deserializeに`CsvOptions`を渡すことでcsvの設定を変更することができます。
