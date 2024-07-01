@@ -7,7 +7,9 @@
     <Nullable>enable</Nullable>
 
     <PackageId>CsvCSharp.Annotations</PackageId>
-    <Version>0.1.5</Version>
+    <Version>0.1.6</Version>
+    <Authors>Annulus Games</Authors>
+    <Copyright>© Annulus Games</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>CSV;Parser;Serializer;Unity;</PackageTags>
     <Description>Attributes and interfaces for Csv-CSharp serialization.</Description>
