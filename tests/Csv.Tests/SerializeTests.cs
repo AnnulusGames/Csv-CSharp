@@ -182,6 +182,25 @@ Charles,17"u8;
 
         CollectionAssert.AreEqual(expected, actual);
     }
+
+    [Test]
+    public void Test_Deserialize_ExtraColumns()
+    {
+        var csv =
+@"Name,Age,Dummy1,Dummy2
+Alex,21,1,""a""
+Bob,35,25,""b""
+Charles,17,23,""c"""u8;
+
+        User[] actual = CsvSerializer.Deserialize<User>(new ReadOnlySequence<byte>(csv.ToArray()));
+        User[] expected = [
+            new() { Name = "Alex", Age = 21 },
+            new() { Name = "Bob", Age = 35 },
+            new() { Name = "Charles", Age = 17 }
+        ];
+
+        CollectionAssert.AreEqual(expected, actual);
+    }
 }
 
 [CsvObject]
