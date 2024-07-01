@@ -530,14 +530,22 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 			builder.AppendLine("var keyBuffer = new global::Csv.Internal.TempList<byte>();");
 			using (builder.BeginBlockScope("try"))
 			{
+				builder.AppendLine("var ___endOfLine = false;");
+
 				using (builder.BeginBlockScope($"for (int i = 0; i < {members.Count}; i++)"))
 				{
 					builder.AppendLine("reader.ReadUtf8(ref keyBuffer);");
 					builder.AppendLine("map[i] = GetColumnIndex(keyBuffer.AsSpan());");
 					builder.AppendLine("keyBuffer.Clear(false);");
-					builder.AppendLine("if (reader.TryReadEndOfLine(true)) break;");
+					using (builder.BeginBlockScope("if (reader.TryReadEndOfLine(true))"))
+					{
+						builder.AppendLine("___endOfLine = true;");
+						builder.AppendLine("break;");
+					}
 					builder.AppendLine($"if (i != {members.Count} - 1) reader.TryReadSeparator(false);");
 				}
+
+				builder.AppendLine("if (!___endOfLine) reader.TrySkipLine();");
 			}
 			using (builder.BeginBlockScope("finally"))
 			{
