@@ -537,7 +537,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 					builder.AppendLine($"if (i != {members.Count} - 1) reader.TryReadSeparator(false);");
 				}
 
-				builder.AppendLine("if (!___endOfLine) reader.TrySkipLine();");
+				builder.AppendLine("if (!___endOfLine) reader.SkipLine();");
 			}
 			using (builder.BeginBlockScope("finally"))
 			{
