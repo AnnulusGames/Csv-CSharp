@@ -18,13 +18,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <PackageId>CsvCSharp</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>CSV;Parser;Serializer;Unity;</PackageTags>
     <Description>Fast CSV Serializer for .NET and Unity.</Description>
-    <RepositoryUrl>https://github.com/AnnulusGames/Csv-CSharp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/AnnulusGames/Csv-CSharp</PackageProjectUrl>
+    <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
