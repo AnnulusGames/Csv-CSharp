@@ -377,7 +377,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 		{
 			builder.AppendLine("var allowComments = reader.Options.AllowComments;");
 			builder.AppendLine("if (allowComments) reader.TrySkipComment();");
-			builder.AppendLine("if (reader.Options.HasHeader) reader.AdvanceToEndOfLine();");
+			builder.AppendLine("if (reader.Options.HasHeader) reader.TrySkipLine();");
 		}
 
 		var members = type.Members;
@@ -391,36 +391,59 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 			using (builder.BeginBlockScope("while (reader.Remaining > 0)"))
 			{
 				builder.AppendLine("if (reader.TryReadEndOfLine()) continue;");
-				builder.AppendLine("if (allowComments && reader.TrySkipComment()) continue;");
+				builder.AppendLine("if (allowComments && reader.TrySkipComment(false)) continue;");
 
 				EmitDeserializeLocalVariables(type, builder);
+				builder.AppendLine("var ___endOfLine = false;");
 
-				for (int i = 0; i < members.Count; i++)
-				{
-					EmitReadMember(members[i], builder);
-
-					if (i == members.Count - 1)
+				using (builder.BeginBlockScope($"for (int __i = 0; __i <= {members.Max(x => x.Index)}; __i++)"))
+				{	
+					using (builder.BeginBlockScope("switch (__i)"))
 					{
-						builder.AppendLine();
-						builder.AppendLine("ADD_ITEM:");
-						builder.Append("list.Add(");
-						using (builder.BeginBlockScope("new()"))
+						foreach (var member in members)
 						{
-							foreach (var member in type.Members)
+							using (builder.BeginIndentScope($"case {member.Index}:"))
 							{
-								builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name},");
+								EmitReadMember(member, builder);
+								builder.AppendLine("break;");
 							}
 						}
-						builder.AppendLine(");");
+						using (builder.BeginIndentScope("default:"))
+						{
+							builder.AppendLine("reader.SkipField();");
+							builder.AppendLine("break;");
+						}
 					}
-					else
+
+					using (builder.BeginBlockScope("if (reader.TryReadEndOfLine(true))"))
 					{
-						builder.AppendLine("if (reader.TryReadEndOfLine()) goto ADD_ITEM;");
-						builder.AppendLine("if (!reader.TryReadSeparator()) goto ADD_ITEM;");
+						builder.AppendLine("___endOfLine = true;");
+						builder.AppendLine("goto ADD_ITEM;");
 					}
+
+					builder.AppendLine("if (!reader.TryReadSeparator(false)) goto ADD_ITEM;");
+				}
+
+				builder.AppendLine();
+				builder.AppendLine("ADD_ITEM:");
+				builder.Append("list.Add(");
+				using (builder.BeginBlockScope("new()"))
+				{
+					foreach (var member in type.Members)
+					{
+						builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name},");
+					}
+				}
+				builder.AppendLine(");");
+
+				builder.AppendLine();
+				using (builder.BeginBlockScope("if (!___endOfLine)"))
+				{
+					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
 				}
 			}
 
+			builder.AppendLine("RETURN:");
 			builder.AppendLine("return list.AsSpan().ToArray();");
 		}
 
@@ -437,32 +460,55 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine("if (allowComments && reader.TrySkipComment(false)) continue;");
 
 				EmitDeserializeLocalVariables(type, builder);
+				builder.AppendLine("var ___endOfLine = false;");
 
-				for (int i = 0; i < members.Count; i++)
+				using (builder.BeginBlockScope($"for (int __i = 0; __i <= {members.Max(x => x.Index)}; __i++)"))
 				{
-					EmitReadMember(members[i], builder);
-
-					if (i == members.Count - 1)
+					using (builder.BeginBlockScope("switch (__i)"))
 					{
-						builder.AppendLine();
-						builder.AppendLine("ADD_ITEM:");
-						using (builder.BeginBlockScope("destination[n++] = new()"))
+						foreach (var member in members)
 						{
-							foreach (var member in type.Members)
+							using (builder.BeginIndentScope($"case {member.Index}:"))
 							{
-								builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name},");
+								EmitReadMember(member, builder);
+								builder.AppendLine("break;");
 							}
 						}
-						builder.AppendLine(";");
+						using (builder.BeginIndentScope("default:"))
+						{
+							builder.AppendLine("reader.SkipField();");
+							builder.AppendLine("break;");
+						}
 					}
-					else
+
+					using (builder.BeginBlockScope("if (reader.TryReadEndOfLine(true))"))
 					{
-						builder.AppendLine("if (reader.TryReadEndOfLine(true)) goto ADD_ITEM;");
-						builder.AppendLine("if (!reader.TryReadSeparator(false)) goto ADD_ITEM;");
+						builder.AppendLine("___endOfLine = true;");
+						builder.AppendLine("goto ADD_ITEM;");
 					}
+
+					builder.AppendLine("if (!reader.TryReadSeparator(false)) goto ADD_ITEM;");
+				}
+
+				builder.AppendLine();
+				builder.AppendLine("ADD_ITEM:");
+				using (builder.BeginBlockScope("destination[n++] = new()"))
+				{
+					foreach (var member in type.Members)
+					{
+						builder.AppendLine($"{member.Symbol.Name} = __{member.Symbol.Name},");
+					}
+				}
+				builder.AppendLine(";");
+
+				builder.AppendLine();
+				using (builder.BeginBlockScope("if (!___endOfLine)"))
+				{
+					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
 				}
 			}
 
+			builder.AppendLine("RETURN:");
 			builder.AppendLine("return n;");
 		}
 	}
@@ -513,10 +559,11 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine("if (allowComments && reader.TrySkipComment(false)) continue;");
 
 				EmitDeserializeLocalVariables(type, builder);
+				builder.AppendLine("var ___endOfLine = false;");
 
-				using (builder.BeginBlockScope("foreach (var index in map)"))
+				using (builder.BeginBlockScope("foreach (var ___i in map)"))
 				{
-					using (builder.BeginBlockScope("switch (index)"))
+					using (builder.BeginBlockScope("switch (___i)"))
 					{
 						for (int i = 0; i < members.Count; i++)
 						{
@@ -532,7 +579,12 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 						}
 					}
 
-					builder.AppendLine("if (reader.TryReadEndOfLine(true)) goto ADD_ITEM;");
+					using (builder.BeginBlockScope("if (reader.TryReadEndOfLine(true))"))
+					{
+						builder.AppendLine("___endOfLine = true;");
+						builder.AppendLine("goto ADD_ITEM;");
+					}
+
 					builder.AppendLine("if (!reader.TryReadSeparator(false)) goto ADD_ITEM;");
 				}
 
@@ -547,8 +599,15 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 					}
 				}
 				builder.AppendLine(");");
+
+				builder.AppendLine();
+				using (builder.BeginBlockScope("if (!___endOfLine)"))
+				{
+					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
+				}
 			}
 
+			builder.AppendLine("RETURN:");
 			builder.AppendLine("return list.AsSpan().ToArray();");
 		}
 
@@ -565,10 +624,11 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine("if (allowComments && reader.TrySkipComment(false)) continue;");
 
 				EmitDeserializeLocalVariables(type, builder);
+				builder.AppendLine("var ___endOfLine = false;");
 
-				using (builder.BeginBlockScope("foreach (var index in map)"))
+				using (builder.BeginBlockScope("foreach (var __i in map)"))
 				{
-					using (builder.BeginBlockScope("switch (index)"))
+					using (builder.BeginBlockScope("switch (__i)"))
 					{
 						for (int i = 0; i < members.Count; i++)
 						{
@@ -584,7 +644,12 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 						}
 					}
 
-					builder.AppendLine("if (reader.TryReadEndOfLine(true)) goto ADD_ITEM;");
+					using (builder.BeginBlockScope("if (reader.TryReadEndOfLine(true))"))
+					{
+						builder.AppendLine("___endOfLine = true;");
+						builder.AppendLine("goto ADD_ITEM;");
+					}
+
 					builder.AppendLine("if (!reader.TryReadSeparator(false)) goto ADD_ITEM;");
 				}
 
@@ -598,8 +663,15 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 					}
 				}
 				builder.AppendLine(";");
+
+				builder.AppendLine();
+				using (builder.BeginBlockScope("if (!___endOfLine)"))
+				{
+					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
+				}
 			}
 
+			builder.AppendLine("RETURN:");
 			builder.AppendLine("return n;");
 		}
 	}

@@ -160,7 +160,7 @@ public ref partial struct CsvReader
         }
     }
 
-    internal int SkipField()
+    public int SkipField()
     {
         if (IsNextSeparatorOrNewline())
         {
@@ -279,38 +279,26 @@ public ref partial struct CsvReader
     {
         if (skipWhiteSpace) SkipWhitespace();
         var isComment = reader.IsNext((byte)'#', true);
-        if (isComment) AdvanceToEndOfLine();
+        if (isComment) TrySkipLine();
 
         return isComment;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AdvanceToEndOfLine()
+    public bool TrySkipLine()
     {
-        if (!reader.TryAdvanceToAny([(byte)'\n', (byte)'\r'], false)) return;
+        if (!reader.TryAdvanceToAny([(byte)'\n', (byte)'\r'], false))
+        {
+            return false;
+        }
+        
         reader.TryRead(out var c1);
         if (c1 == '\r' && reader.TryPeek(out var c2) && c2 == '\n')
         {
             reader.Advance(1);
         }
-    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AdvanceToSeparatorOrEndOfLine()
-    {
-        SkipWhitespace();
-
-        while (true)
-        {
-            if (!reader.TryPeek(out var c)) return;
-            if (c == (byte)'\n' || c == (byte)'\r' || c == separator) break;
-        }
-
-        reader.TryRead(out var c1);
-        if (c1 == '\r' && reader.TryPeek(out var c2) && c2 == '\n')
-        {
-            reader.Advance(1);
-        }
+        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
