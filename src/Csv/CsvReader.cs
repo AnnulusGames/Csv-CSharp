@@ -279,17 +279,21 @@ public ref partial struct CsvReader
     {
         if (skipWhiteSpace) SkipWhitespace();
         var isComment = reader.IsNext((byte)'#', true);
-        if (isComment) TrySkipLine();
+        if (isComment) SkipLine();
 
         return isComment;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TrySkipLine()
+    public void SkipLine()
     {
         if (!reader.TryAdvanceToAny([(byte)'\n', (byte)'\r'], false))
         {
-            return false;
+#if NETSTANDARD2_1
+            reader.Advance(reader.Remaining);
+#else
+            reader.AdvanceToEnd();
+#endif
         }
         
         reader.TryRead(out var c1);
@@ -297,8 +301,6 @@ public ref partial struct CsvReader
         {
             reader.Advance(1);
         }
-
-        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

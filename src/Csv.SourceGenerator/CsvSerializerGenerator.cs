@@ -376,8 +376,8 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 		void EmitReadHeader()
 		{
 			builder.AppendLine("var allowComments = reader.Options.AllowComments;");
-			builder.AppendLine("if (allowComments) reader.TrySkipComment();");
-			builder.AppendLine("if (reader.Options.HasHeader) reader.TrySkipLine();");
+			builder.AppendLine("while (reader.TryReadEndOfLine(true) || (allowComments && reader.TrySkipComment(false))) { }");
+			builder.AppendLine("if (reader.Options.HasHeader) reader.SkipLine();");
 		}
 
 		var members = type.Members;
@@ -437,13 +437,9 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine(");");
 
 				builder.AppendLine();
-				using (builder.BeginBlockScope("if (!___endOfLine)"))
-				{
-					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
-				}
+				builder.AppendLine("if (!___endOfLine) reader.SkipLine();");
 			}
 
-			builder.AppendLine("RETURN:");
 			builder.AppendLine("return list.AsSpan().ToArray();");
 		}
 
@@ -502,13 +498,9 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine(";");
 
 				builder.AppendLine();
-				using (builder.BeginBlockScope("if (!___endOfLine)"))
-				{
-					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
-				}
+				builder.AppendLine("if (!___endOfLine) reader.SkipLine();");
 			}
 
-			builder.AppendLine("RETURN:");
 			builder.AppendLine("return n;");
 		}
 	}
@@ -524,7 +516,7 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 			builder.AppendLine("if (!reader.Options.HasHeader) global::Csv.CsvSerializationException.ThrowHeaderRequired();");
 
 			builder.AppendLine("var allowComments = reader.Options.AllowComments;");
-			builder.AppendLine("if (allowComments) reader.TrySkipComment();");
+			builder.AppendLine("while (reader.TryReadEndOfLine(true) || (allowComments && reader.TrySkipComment(false))) { }");
 
 			builder.AppendLine($"scoped Span<int> map = stackalloc int[{members.Count}];");
 			builder.AppendLine("var keyBuffer = new global::Csv.Internal.TempList<byte>();");
@@ -609,13 +601,9 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine(");");
 
 				builder.AppendLine();
-				using (builder.BeginBlockScope("if (!___endOfLine)"))
-				{
-					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
-				}
+				builder.AppendLine("if (!___endOfLine) reader.SkipLine();");
 			}
 
-			builder.AppendLine("RETURN:");
 			builder.AppendLine("return list.AsSpan().ToArray();");
 		}
 
@@ -673,13 +661,9 @@ public partial class CsvSerializerGenerator : IIncrementalGenerator
 				builder.AppendLine(";");
 
 				builder.AppendLine();
-				using (builder.BeginBlockScope("if (!___endOfLine)"))
-				{
-					builder.AppendLine("if (!reader.TrySkipLine()) goto RETURN;");
-				}
+				builder.AppendLine("if (!___endOfLine) reader.SkipLine();");
 			}
 
-			builder.AppendLine("RETURN:");
 			builder.AppendLine("return n;");
 		}
 	}
