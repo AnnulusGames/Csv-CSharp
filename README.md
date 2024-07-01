@@ -13,8 +13,16 @@ Csv-CSharp is a highly performant CSV (TSV) parser for .NET and Unity. It is des
 
 Csv-CSharp requires .NET Standard 2.1 or higher. The package can be obtained from NuGet.
 
+### .NET CLI
+
 ```ps1
-PM> Install-Package CsvCSharp
+dotnet add package CsvCSharp
+```
+
+### Package Manager
+
+```ps1
+Install-Package CsvCSharp
 ```
 
 ### Unity

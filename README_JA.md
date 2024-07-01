@@ -13,8 +13,16 @@ Csv-CSharpは.NET、Unity向けの非常に高速なcsv(tsv)パーサです。UT
 
 Csv-CSharpを利用するには.NET Standard2.1以上が必要です。パッケージはNuGetから入手できます。
 
+### .NET CLI
+
 ```ps1
-PM> Install-Package CsvCSharp
+dotnet add package CsvCSharp
+```
+
+### Package Manager
+
+```ps1
+Install-Package CsvCSharp
 ```
 
 ### Unity
